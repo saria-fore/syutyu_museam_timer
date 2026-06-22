@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Focus Art Museum</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Focus Art <span>Museum</span></h1>
+    <p class="subtitle">集中した時間をアートに変えて、自分だけの美術館を作ろう</p>
+
+    <div class="workspace">
+        <div class="date-display" id="dateDisplay">---</div>
+
+        <div class="sunday-review-section" id="sundayReview" style="display: none;">
+            <h2 class="review-title">🏛️ WEEKLY RETROSPECTIVE</h2>
+            <p class="review-subtitle">今週のあなたの努力を称える回顧展</p>
+            
+            <div class="review-badge-area">
+                <div class="badge-icon" id="badgeIcon">🎨</div>
+                <div class="badge-title" id="badgeTitle">今週の称号</div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="weeklyChart"></canvas>
+            </div>
+            
+            <button class="btn" id="nextWeekBtn">🗓️ 新しい1週間を開始する</button>
+            <hr class="section-divider">
+        </div>
+
+        <div class="message-box" id="messageBox">さあ、今日も目の前の作業に没頭しよう！</div>
+
+        <div class="todo-section">
+            <div class="todo-header">
+                <span>📋 TODAY'S OBJECTIVES</span>
+                <span class="achievement-rate" id="achievementRate">達成率: 0%</span>
+            </div>
+            <div class="todo-progress-container">
+                <div class="todo-progress-bar" id="todoProgressBar"></div>
+            </div>
+            <div class="todo-input-group">
+                <input type="text" id="todoInput" placeholder="新しい目標を入力..." autocomplete="off">
+                <button id="addTodoBtn" class="btn-mini">+</button>
+            </div>
+            <ul class="todo-list" id="todoList"></ul>
+        </div>
+
+        <hr class="section-divider">
+
+        <div class="mode-select-container">
+            <label for="modeSelect">🎨 展示コース（集中単位）を選択：</label>
+            <select id="modeSelect" class="select-box">
+                <option value="10">10分単位（細密画コース：54マス）</option>
+                <option value="15">15分単位（スタンダードコース：36マス）</option>
+                <option value="20">20分単位（中細作コース：27マス）</option>
+                <option value="30">30分単位（中作コース：18マス）</option>
+                <option value="60" selected>60分単位（大作コース：9マス）</option>
+            </select>
+        </div>
+
+        <div class="puzzle-container" id="puzzle"></div>
+
+        <div class="timer-container">
+            <div class="timer-display" id="timerDisplay">60:00</div>
+            <button class="btn" id="startTimerBtn">⏳ 集中を開始する</button>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="status-text" id="statusText">進捗: 0 / 9 マス</div>
+        
+        <button class="btn btn-clear" onclick="if(confirm('全てのデータをリセットしますか？')) { localStorage.clear(); location.reload(); }">データを強制クリアする</button>
+    </div>
+
+    <div class="museum-section">
+        <div class="museum-title">🏛️ 獲得したコレクション</div>
+        <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
