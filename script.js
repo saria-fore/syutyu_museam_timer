@@ -33,14 +33,18 @@ imageLoader.addEventListener('change', function(e) {
     const reader = new FileReader();
     reader.onload = function(event) {
         const base64Image = event.target.result;
-        const currentImg = imagePlaylist[currentImageIdx % imagePlaylist.length];
+        
+        const currentImg = imagePlaylist[currentImageIdx];
 
-        localStorage.setItem(`custom_img_${currentImg.id}`, base64Image);
-        currentImg.src = base64Image;
+        if (currentImg) {
+        
+            localStorage.setItem(`custom_img_${currentImg.id}`, base64Image);
+            currentImg.src = base64Image;
 
-        renderPuzzle();
-        renderGallery();
-        alert(`🎨 現在のパズル画像を「${currentImg.title}」としてタブレットに保存しました！`);
+            renderPuzzle();
+            renderGallery();
+            alert(`🎨 コレクションの ${currentImageIdx + 1} 枚目に画像をセットしました！`);
+        }
     };
     reader.readAsDataURL(file); 
 });
