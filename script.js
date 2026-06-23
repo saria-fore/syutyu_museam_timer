@@ -1,4 +1,4 @@
-let currentPuzzleSrc = localStorage.getItem('museum_current_src') || 'baymax.png'; 
+let currentPuzzleSrc = localStorage.getItem('museum_current_src') || '#e6e2da'; 
 let completedImages = JSON.parse(localStorage.getItem('museum_completed')) || [];
 let todoListItems = JSON.parse(localStorage.getItem('museum_todos')) || [];
 let weeklyStats = JSON.parse(localStorage.getItem('museum_weekly_stats')) || {
@@ -6,6 +6,7 @@ let weeklyStats = JSON.parse(localStorage.getItem('museum_weekly_stats')) || {
     todoRates: [0, 0, 0, 0, 0, 0, 0]
 };
 
+// 🏆 データの中心：共通の「分数のプール」
 let totalMinutes = parseInt(localStorage.getItem('museum_total_minutes')) || 0;
 let focusMinutesPool = parseInt(localStorage.getItem('museum_free_pool')) || 0; 
 
@@ -19,11 +20,14 @@ const cheerMessages = [
 let currentPanels = parseInt(localStorage.getItem('museum_panels')) || 0;
 let currentMinutesMode = localStorage.getItem('museum_minutesMode') || "50"; 
 const totalPanels = 9; 
-let timeLeft = 3000; 
-let countdownInterval = null;
 
+// ⏳ 差分計算用の最重要変数
+let countdownInterval = null;
 let isRestMode = false; 
-let elapsedSeconds = 0; 
+
+let timerStartTime = null;  
+let timerDuration = 0;       
+let currentDisplaySeconds = 0; 
 
 const puzzle = document.getElementById('puzzle');
 const progressBar = document.getElementById('progressBar');
@@ -83,7 +87,6 @@ function updateLevelSystem() {
     if (totalMinutesEl) {
         totalMinutesEl.innerText = `総集中: ${totalMinutes}分 (次のマスまであと: ${60 - focusMinutesPool}分)`;
     } else {
-        // 💡 HTML側にまだ枠がない場合は、メッセージボックスの横に簡易表示
         statusText.innerText = `進捗: ${currentPanels} / ${totalPanels} マス (次のマスまであと: ${60 - focusMinutesPool}分)`;
     }
 }
@@ -107,7 +110,7 @@ function initApp() {
     resetTimerDisplay();
     updateLevelSystem(); 
     checkSundayReview(); 
-    setupButtonEvents();
+    setupButtonEvents(); 
 }
 
 function updateCurrentDate() {
@@ -120,7 +123,14 @@ function updateCurrentDate() {
 function renderPuzzle() {
     if (!puzzle) return;
     puzzle.innerHTML = '';
-    puzzle.style.backgroundImage = `url('${currentPuzzleSrc}')`;
+    
+    if (currentPuzzleSrc.startsWith('#')) {
+        puzzle.style.backgroundImage = 'none';
+        puzzle.style.backgroundColor = currentPuzzleSrc;
+    } else {
+        puzzle.style.backgroundImage = `url('${currentPuzzleSrc}')`;
+    }
+
     for (let i = 0; i < totalPanels; i++) {
         const panel = document.createElement('div');
         panel.classList.add('panel');
@@ -175,14 +185,14 @@ function renderGallery() {
 function resetTimerDisplay() {
     clearInterval(countdownInterval); 
     countdownInterval = null;
-    elapsedSeconds = 0;
+    timerStartTime = null;
     
     if (!timerDisplay || !startTimerBtn) return;
     
     timerDisplay.style.color = ''; 
     
     if (isRestMode) {
-        timeLeft = 10 * 60; 
+        timerDuration = 10 * 60; 
         timerDisplay.innerText = "10:00";
         timerDisplay.classList.add('rest-mode');
         startTimerBtn.innerText = "☕ 休憩カウントダウン中";
@@ -194,8 +204,8 @@ function resetTimerDisplay() {
         startTimerBtn.disabled = false;
         startTimerBtn.innerText = "⏱️ 計測を開始する";
     } else {
-        timeLeft = parseInt(currentMinutesMode) * 60;
-        timerDisplay.innerText = `${String(Math.floor(timeLeft/60)).padStart(2,'0')}:${String(timeLeft%60).padStart(2,'0')}`;
+        timerDuration = parseInt(currentMinutesMode) * 60;
+        timerDisplay.innerText = `${String(Math.floor(timerDuration/60)).padStart(2,'0')}:${String(timerDuration%60).padStart(2,'0')}`;
         timerDisplay.classList.remove('rest-mode');
         timerDisplay.classList.remove('running');
         startTimerBtn.disabled = false;
@@ -292,26 +302,32 @@ function stopAndRecordFreeMode() {
     clearInterval(countdownInterval);
     countdownInterval = null;
     
-    const earnedMinutes = Math.max(1, Math.floor(elapsedSeconds / 60)); 
+    const actualElapsedSeconds = Math.floor((Date.now() - timerStartTime) / 1000);
+    const earnedMinutes = Math.max(1, Math.floor(actualElapsedSeconds / 60)); 
     playNotificationSound();
     
     addMinutesToPool(earnedMinutes);
     resetTimerDisplay();
 }
-
 function startCountdown() {
     timerDisplay.classList.add('running');
     startTimerBtn.disabled = true;
     if (!isRestMode) startTimerBtn.innerText = "🔒 集中ロック中...";
 
+    timerStartTime = Date.now(); // 💡 開始した「今」の時刻を記録
+
     countdownInterval = setInterval(() => {
-        timeLeft--;
-        timerDisplay.innerText = `${String(Math.floor(timeLeft/60)).padStart(2,'0')}:${String(timeLeft%60).padStart(2,'0')}`;
-        
+        const elapsedTime = Math.floor((Date.now() - timerStartTime) / 1000);
+        const timeLeft = timerDuration - elapsedTime;
+
         if (timeLeft <= 0) {
             clearInterval(countdownInterval);
+            timerDisplay.innerText = "00:00";
             panelCompleted(); 
+            return;
         }
+
+        timerDisplay.innerText = `${String(Math.floor(timeLeft/60)).padStart(2,'0')}:${String(timeLeft%60).padStart(2,'0')}`;
     }, 1000);
 }
 
@@ -320,15 +336,17 @@ function startCountUp() {
     startTimerBtn.innerText = "🛑 集中を終了して記録する";
     startTimerBtn.disabled = false; 
     
+    timerStartTime = Date.now();
+
     startTimerBtn.onclick = (e) => {
         e.preventDefault();
         stopAndRecordFreeMode();
     };
 
     countdownInterval = setInterval(() => {
-        elapsedSeconds++;
-        const m = Math.floor(elapsedSeconds / 60);
-        const s = elapsedSeconds % 60;
+        const actualElapsedSeconds = Math.floor((Date.now() - timerStartTime) / 1000);
+        const m = Math.floor(actualElapsedSeconds / 60);
+        const s = actualElapsedSeconds % 60;
         timerDisplay.innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     }, 1000);
 }
@@ -342,7 +360,7 @@ function setupButtonEvents() {
         if (currentMinutesMode === "free") {
             startCountUp();
         } else {
-            timeLeft = isRestMode ? 10 * 60 : parseInt(currentMinutesMode) * 60;
+            timerDuration = isRestMode ? 10 * 60 : parseInt(currentMinutesMode) * 60;
             startCountdown();
         }
     };
@@ -414,7 +432,12 @@ if (timerDisplay) {
     
     if (startTimerBtn) {
         startTimerBtn.addEventListener('click', () => {
-            if (isTestModeActive && !isRestMode) { timeLeft = 3; isTestModeActive = false; clearInterval(countdownInterval); startCountdown(); }
+            if (isTestModeActive && !isRestMode) { 
+                timerDuration = 3; // テスト用に3秒に設定
+                isTestModeActive = false; 
+                clearInterval(countdownInterval); 
+                startCountdown(); 
+            }
         });
     }
 }
