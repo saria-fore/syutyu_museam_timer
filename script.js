@@ -241,12 +241,26 @@ function panelCompleted() {
     weeklyStats.focusMinutes[day] += parseInt(currentMinutesMode);
     localStorage.setItem('museum_weekly_stats', JSON.stringify(weeklyStats));
     updateUI();
-    if (currentPanels >= totalPanels) {
-        confetti();
-        completedImages.push({ src: imagePlaylist[currentImageIdx % imagePlaylist.length].src, title: imagePlaylist[currentImageIdx % imagePlaylist.length].title, date: new Date().toLocaleDateString() });
-        localStorage.setItem('museum_completed', JSON.stringify(completedImages));
-        setTimeout(() => { currentImageIdx++; currentPanels = 0; localStorage.setItem('museum_currentIdx', currentImageIdx); localStorage.setItem('museum_panels', 0); initApp(); }, 3000);
-    } else {
+if (currentPanels >= totalPanels) {
+    confetti();
+    completedImages.push({ src: imagePlaylist[currentImageIdx % imagePlaylist.length].src, title: imagePlaylist[currentImageIdx % imagePlaylist.length].title, date: new Date().toLocaleDateString() });
+    localStorage.setItem('museum_completed', JSON.stringify(completedImages));
+    
+    // ✨ 15枚目が終わったら1枚目に戻る処理を含めてアップデート
+    setTimeout(() => { 
+        currentImageIdx++; 
+        
+        // 🔄 【ループ追加】もし15枚目（リストの最後）をクリアしたら、1枚目(0)に戻す
+        if (currentImageIdx >= imagePlaylist.length) {
+            currentImageIdx = 0;
+        }
+        
+        currentPanels = 0; 
+        localStorage.setItem('museum_currentIdx', currentImageIdx); 
+        localStorage.setItem('museum_panels', 0); 
+        initApp(); 
+    }, 3000);
+} else {
         setTimeout(resetTimerDisplay, 1000);
     }
 }
@@ -316,3 +330,4 @@ startTimerBtn.onclick = (e) => {
         }
     }, 1000);
 };
+
