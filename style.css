@@ -134,3 +134,11 @@ h1 span { color: var(--accent-color); }
 .frame { background: #fff; border: 1px solid var(--border-line); padding: 10px; border-radius: 10px; }
 .frame img { width: 100%; border-radius: 5px; }
 .meta { font-size: 10px; margin-top: 5px; }
+
+.image-uploader-container {
+    margin-bottom: 25px;
+}
+.image-uploader-container label:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}

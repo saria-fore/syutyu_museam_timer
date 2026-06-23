@@ -5,6 +5,35 @@ const imagePlaylist = [
 
 ];
 
+const imageLoader = document.getElementById('imageLoader');
+
+
+imagePlaylist.forEach(img => {
+    const savedCustomSrc = localStorage.getItem(`custom_img_${img.id}`);
+    if (savedCustomSrc) {
+        img.src = savedCustomSrc;
+    }
+});
+
+imageLoader.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const base64Image = event.target.result;
+        const currentImg = imagePlaylist[currentImageIdx % imagePlaylist.length];
+
+        localStorage.setItem(`custom_img_${currentImg.id}`, base64Image);
+        currentImg.src = base64Image;
+
+        renderPuzzle();
+        renderGallery();
+        alert(`🎨 現在のパズル画像を「${currentImg.title}」としてタブレットに保存しました！`);
+    };
+    reader.readAsDataURL(file); 
+});
+
 const cheerMessages = [
     "最高のスタート！", "素晴らしい集中！", "よし、その調子！",
     "いいペース！", "折り返し地点！", "後半戦突入！",

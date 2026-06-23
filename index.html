@@ -52,17 +52,22 @@
         <hr class="section-divider">
 
         <div class="mode-select-container">
-            <label for="modeSelect">🎨 展示コース（集中単位）を選択：</label>
-            <select id="modeSelect" class="select-box">
-                <option value="10">10分単位（細密画コース：54マス）</option>
-                <option value="15">15分単位（スタンダードコース：36マス）</option>
-                <option value="20">20分単位（中細作コース：27マス）</option>
-                <option value="30">30分単位（中作コース：18マス）</option>
-                <option value="60" selected>60分単位（大作コース：9マス）</option>
-            </select>
-        </div>
+    <label for="modeSelect">🎨 展示コース（集中単位）を選択：</label>
+    <select id="modeSelect" class="select-box">
+        <option value="10">10分単位（細密画コース：54マス）</option>
+        <option value="15">15分単位（スタンダードコース：36マス）</option>
+        <option value="20">20分単位（中細作コース：27マス）</option>
+        <option value="30">30分単位（中作コース：18マス）</option>
+        <option value="60" selected>60分単位（大作コース：9マス）</option>
+    </select>
+</div>
 
-        <div class="puzzle-container" id="puzzle"></div>
+<div class="image-uploader-container">
+    <label for="imageLoader" class="btn-mini" style="padding: 6px 12px; cursor: pointer; display: inline-block;">🖼️ タブレットのアルバムからカスタム画像を設定</label>
+    <input type="file" id="imageLoader" accept="image/*" style="display: none;">
+</div>
+
+<div class="puzzle-container" id="puzzle"></div>
 
         <div class="timer-container">
             <div class="timer-display" id="timerDisplay">60:00</div>
