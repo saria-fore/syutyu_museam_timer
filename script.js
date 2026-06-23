@@ -1,54 +1,21 @@
-const imagePlaylist = [
-    { id: '1', src: 'IMG_6295.jpg', title: ' ' },
-    { id: '2', src: 'IMG_6296.jpg', title: ' ' },
-    { id: '3', src: 'IMG_6297.jpg', title: ' ' },
-    { id: '4', src: 'IMG_6298.jpg', title: ' ' },
-    { id: '5', src: 'IMG_6299.jpg', title: ' ' },
-    { id: '6', src: 'IMG_6300.jpg', title: ' ' },    
-    { id: '7', src: 'IMG_6301.jpg', title: ' ' },
-    { id: '8', src: 'IMG_6302.jpg', title: ' ' },
-    { id: '9', src: 'IMG_6303.jpg', title: ' ' },
-    { id: '10', src: 'IMG_6304.jpg', title: ' ' },
-    { id: '11', src: 'IMG_6305.jpg', title: ' ' },
-    { id: '12', src: 'IMG_6306.jpg', title: ' ' }, 
-    { id: '13', src: 'IMG_6307.jpg', title: ' ' },
-    { id: '14', src: 'IMG_6308.jpg', title: ' ' },
-    { id: '15', src: 'IMG_6309.jpg', title: ' ' }
-];
+// ==========================================
+// 🏛️ Focus Art Museum - シンプル自由設計版
+// ==========================================
 
-const imageLoader = document.getElementById('imageLoader');
+// 現在パズルにセットされている画像データ（Base64）
+let currentPuzzleSrc = localStorage.getItem('museum_current_src') || 'baymax.png'; 
 
+// これまでにクリアして獲得したコレクションのリスト（配列）
+let completedImages = JSON.parse(localStorage.getItem('museum_completed')) || [];
 
-imagePlaylist.forEach(img => {
-    const savedCustomSrc = localStorage.getItem(`custom_img_${img.id}`);
-    if (savedCustomSrc) {
-        img.src = savedCustomSrc;
-    }
-});
+// ToDoリストと週間統計のデータ
+let todoListItems = JSON.parse(localStorage.getItem('museum_todos')) || [];
+let weeklyStats = JSON.parse(localStorage.getItem('museum_weekly_stats')) || {
+    focusMinutes: [0, 0, 0, 0, 0, 0, 0],
+    todoRates: [0, 0, 0, 0, 0, 0, 0]
+};
 
-imageLoader.addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(event) {
-        const base64Image = event.target.result;
-        
-        const currentImg = imagePlaylist[currentImageIdx];
-
-        if (currentImg) {
-        
-            localStorage.setItem(`custom_img_${currentImg.id}`, base64Image);
-            currentImg.src = base64Image;
-
-            renderPuzzle();
-            renderGallery();
-            alert(`🎨 コレクションの ${currentImageIdx + 1} 枚目に画像をセットしました！`);
-        }
-    };
-    reader.readAsDataURL(file); 
-});
-
+// 応援メッセージ
 const cheerMessages = [
     "最高のスタート！", "素晴らしい集中！", "よし、その調子！",
     "いいペース！", "折り返し地点！", "後半戦突入！",
@@ -56,36 +23,14 @@ const cheerMessages = [
     "完全達成！！おめでとう！"
 ];
 
-let currentImageIdx = parseInt(localStorage.getItem('museum_currentIdx')) || 0;
+// 状態管理変数
 let currentPanels = parseInt(localStorage.getItem('museum_panels')) || 0;
-let completedImages = JSON.parse(localStorage.getItem('museum_completed')) || [];
-let todoListItems = JSON.parse(localStorage.getItem('museum_todos')) || [];
-let weeklyStats = JSON.parse(localStorage.getItem('museum_weekly_stats')) || {
-    focusMinutes: [0, 0, 0, 0, 0, 0, 0],
-    todoRates: [0, 0, 0, 0, 0, 0, 0]
-};
-
-const puzzle = document.getElementById('puzzle');
-const progressBar = document.getElementById('progressBar');
-const statusText = document.getElementById('statusText');
-const messageBox = document.getElementById('messageBox');
-const galleryGrid = document.getElementById('galleryGrid');
-const startTimerBtn = document.getElementById('startTimerBtn');
-const timerDisplay = document.getElementById('timerDisplay');
-const modeSelect = document.getElementById('modeSelect');
-const todoInput = document.getElementById('todoInput');
-const addTodoBtn = document.getElementById('addTodoBtn');
-const todoList = document.getElementById('todoList');
-const achievementRate = document.getElementById('achievementRate');
-const todoProgressBar = document.getElementById('todoProgressBar');
-const sundayReview = document.getElementById('sundayReview');
-
-let countdownInterval = null;
-let timeLeft = 3600; 
-let currentMinutesMode = 60;
+let currentMinutesMode = localStorage.getItem('museum_minutesMode') || "60";
 let totalPanels = 9;
-let chartInstance = null;
+let timeLeft = 3600; 
+let countdownInterval = null;
 
+// モードごとのマス数設定
 const modeSettings = {
     "10": { total: 54, cols: 9, rows: 6 },
     "15": { total: 36, cols: 6, rows: 6 },
@@ -94,13 +39,55 @@ const modeSettings = {
     "60": { total: 9,  cols: 3, rows: 3 }
 };
 
+// HTML要素の取得
+const puzzle = document.getElementById('puzzle');
+const progressBar = document.getElementById('progressBar');
+const statusText = document.getElementById('statusText');
+const messageBox = document.getElementById('messageBox');
+const timerDisplay = document.getElementById('timerDisplay');
+const startTimerBtn = document.getElementById('startTimerBtn');
+const modeSelect = document.getElementById('modeSelect');
+const imageLoader = document.getElementById('imageLoader');
+const todoInput = document.getElementById('todoInput');
+const addTodoBtn = document.getElementById('addTodoBtn');
+const todoList = document.getElementById('todoList');
+const achievementRate = document.getElementById('achievementRate');
+const todoProgressBar = document.getElementById('todoProgressBar');
+const sundayReview = document.getElementById('sundayReview');
+
+// ==========================================
+// 📱 アルバムから画像を選択したときの処理（心臓部）
+// ==========================================
+imageLoader.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        currentPuzzleSrc = event.target.result; // 選んだ画像をセット
+        localStorage.setItem('museum_current_src', currentPuzzleSrc);
+        
+        // パズルをリセットして新しい画像にする
+        currentPanels = 0;
+        localStorage.setItem('museum_panels', 0);
+        
+        renderPuzzle();
+        updateUI();
+        resetTimerDisplay();
+        alert("🎨 新しい画像がセットされました！集中を開始しましょう！");
+    };
+    reader.readAsDataURL(file);
+});
+
+// ==========================================
+// 🏛️ アプリの初期化と描画
+// ==========================================
 function initApp() {
-    currentMinutesMode = localStorage.getItem('museum_minutesMode') || "60";
     modeSelect.value = currentMinutesMode;
     updateCurrentDate();
     calculateDimensions();
     renderPuzzle();
-    renderGallery();
+    renderGallery(); // 獲得したコレクションを表示
     renderTodos(); 
     updateUI();
     resetTimerDisplay();
@@ -122,8 +109,7 @@ function calculateDimensions() {
 
 function renderPuzzle() {
     puzzle.innerHTML = '';
-    const currentImg = imagePlaylist[currentImageIdx % imagePlaylist.length];
-    puzzle.style.backgroundImage = `url('${currentImg.src}')`;
+    puzzle.style.backgroundImage = `url('${currentPuzzleSrc}')`;
 
     for (let i = 0; i < totalPanels; i++) {
         const panel = document.createElement('div');
@@ -139,45 +125,100 @@ function updateUI() {
         if (i < currentPanels) p.classList.add('revealed');
         else p.classList.remove('revealed');
     });
-    const percentage = (currentPanels / totalPanels) * 100;
+    const percentage = totalPanels > 0 ? (currentPanels / totalPanels) * 100 : 0;
     progressBar.style.width = `${percentage}%`;
     statusText.innerText = `進捗: ${currentPanels} / ${totalPanels} マス`;
     const msgIdx = Math.min(Math.floor((currentPanels / totalPanels) * 10), 9);
     messageBox.innerText = cheerMessages[msgIdx];
 }
 
+// 🏛️ 獲得したコレクション（クリアした画像）を並べる関数
 function renderGallery() {
     const galleryContainer = document.getElementById('gallery');
     if (!galleryContainer) return;
-    
     galleryContainer.innerHTML = ''; 
 
-    imagePlaylist.forEach((img, index) => {
+    if (completedImages.length === 0) {
+        galleryContainer.innerHTML = '<p style="color:var(--text-muted); font-size:12px; width:100%;">まだコレクションはありません。パズルを完成させてアートを獲得しよう！</p>';
+        return;
+    }
+
+    // クリアした画像が新しい順に並ぶように逆順で表示
+    [...completedImages].reverse().forEach((img) => {
         const thumb = document.createElement('img');
-        
-        const savedCustomSrc = localStorage.getItem(`custom_img_${img.id}`);
-        thumb.src = savedCustomSrc ? savedCustomSrc : img.src;
-        
+        thumb.src = img.src;
         thumb.className = 'gallery-thumb';
+        thumb.title = img.date;
         
-        if (index === currentImageIdx) {
-            thumb.classList.add('active');
-        }
-
-        
+        // コレクションをタップしたら、その画像をもう一度パズルにセットして遊べるおまけ機能
         thumb.addEventListener('click', () => {
-            currentImageIdx = index; 
-            
-            renderPuzzle(); 
-            renderGallery(); 
-    
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if(confirm("🎨 この画像でもう一度パズルに挑戦しますか？")) {
+                currentPuzzleSrc = img.src;
+                localStorage.setItem('museum_current_src', currentPuzzleSrc);
+                currentPanels = 0;
+                localStorage.setItem('museum_panels', 0);
+                renderPuzzle();
+                updateUI();
+                resetTimerDisplay();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         });
-
         galleryContainer.appendChild(thumb);
     });
 }
 
+// ==========================================
+// ⏳ タイマー処理
+// ==========================================
+function resetTimerDisplay() {
+    clearInterval(countdownInterval); 
+    countdownInterval = null;
+    timeLeft = parseInt(currentMinutesMode) * 60;
+    timerDisplay.innerText = `${String(Math.floor(timeLeft/60)).padStart(2,'0')}:${String(timeLeft%60).padStart(2,'0')}`;
+    timerDisplay.classList.remove('running'); 
+    startTimerBtn.disabled = false;
+    startTimerBtn.innerText = "⏳ 集中を開始する";
+}
+
+// パズルが1マス埋まった時の処理
+function panelCompleted() {
+    currentPanels++;
+    localStorage.setItem('museum_panels', currentPanels);
+    
+    const day = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+    weeklyStats.focusMinutes[day] += parseInt(currentMinutesMode);
+    localStorage.setItem('museum_weekly_stats', JSON.stringify(weeklyStats));
+    
+    updateUI();
+    
+    // 🎉 パズルが完全に完成（全面オープン）した場合
+    if (currentPanels >= totalPanels) {
+        confetti(); // 紙吹雪
+        
+        // 現在使っていた画像を「獲得コレクション」の配列に保存！
+        completedImages.push({ 
+            src: currentPuzzleSrc, 
+            date: new Date().toLocaleDateString() 
+        });
+        localStorage.setItem('museum_completed', JSON.stringify(completedImages));
+        
+        alert("🎉 おめでとうございます！パズルが完成し、コレクションに登録されました！");
+        
+        // 3秒後に次のパズルの準備（進捗をリセットして再描画）
+        setTimeout(() => { 
+            currentPanels = 0; 
+            localStorage.setItem('museum_panels', 0); 
+            initApp(); 
+        }, 3000);
+    } else {
+        // まだ残りのマスがある場合はタイマーをリセットして次のマスへ
+        setTimeout(resetTimerDisplay, 1000);
+    }
+}
+
+// ==========================================
+// 📋 ToDoリスト ＆ 週次レビュー（元の機能を維持）
+// ==========================================
 function renderTodos() {
     todoList.innerHTML = '';
     todoListItems.forEach((t, i) => {
@@ -216,73 +257,29 @@ addTodoBtn.onclick = () => {
 modeSelect.onchange = (e) => {
     currentMinutesMode = e.target.value;
     localStorage.setItem('museum_minutesMode', currentMinutesMode);
-    currentPanels = 0; localStorage.setItem('museum_panels', 0);
-    calculateDimensions(); renderPuzzle(); updateUI(); resetTimerDisplay();
+    currentPanels = 0; 
+    localStorage.setItem('museum_panels', 0);
+    calculateDimensions(); 
+    renderPuzzle(); 
+    updateUI(); 
+    resetTimerDisplay();
 };
-
-function resetTimerDisplay() {
-    clearInterval(countdownInterval); countdownInterval = null;
-    timeLeft = parseInt(currentMinutesMode) * 60;
-    timerDisplay.innerText = `${String(Math.floor(timeLeft/60)).padStart(2,'0')}:${String(timeLeft%60).padStart(2,'0')}`;
-    timerDisplay.classList.remove('running'); startTimerBtn.disabled = false;
-}
-
-startTimerBtn.onclick = (e) => {
-    if (countdownInterval) return;
-    timeLeft = e.shiftKey ? 3 : parseInt(currentMinutesMode) * 60;
-    timerDisplay.classList.add('running'); startTimerBtn.disabled = true;
-    countdownInterval = setInterval(() => {
-        timeLeft--;
-        timerDisplay.innerText = `${String(Math.floor(timeLeft/60)).padStart(2,'0')}:${String(timeLeft%60).padStart(2,'0')}`;
-        if (timeLeft <= 0) { clearInterval(countdownInterval); panelCompleted(); }
-    }, 1000);
-};
-
-function panelCompleted() {
-    currentPanels++;
-    localStorage.setItem('museum_panels', currentPanels);
-    const day = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
-    weeklyStats.focusMinutes[day] += parseInt(currentMinutesMode);
-    localStorage.setItem('museum_weekly_stats', JSON.stringify(weeklyStats));
-    updateUI();
-if (currentPanels >= totalPanels) {
-    confetti();
-    completedImages.push({ src: imagePlaylist[currentImageIdx % imagePlaylist.length].src, title: imagePlaylist[currentImageIdx % imagePlaylist.length].title, date: new Date().toLocaleDateString() });
-    localStorage.setItem('museum_completed', JSON.stringify(completedImages));
-    
-    // ✨ 15枚目が終わったら1枚目に戻る処理を含めてアップデート
-    setTimeout(() => { 
-        currentImageIdx++; 
-        
-        // 🔄 【ループ追加】もし15枚目（リストの最後）をクリアしたら、1枚目(0)に戻す
-        if (currentImageIdx >= imagePlaylist.length) {
-            currentImageIdx = 0;
-        }
-        
-        currentPanels = 0; 
-        localStorage.setItem('museum_currentIdx', currentImageIdx); 
-        localStorage.setItem('museum_panels', 0); 
-        initApp(); 
-    }, 3000);
-} else {
-        setTimeout(resetTimerDisplay, 1000);
-    }
-}
 
 function checkSundayReview() {
     if (new Date().getDay() === 0 || window.forceSunday) {
         sundayReview.style.display = "block";
         const ctx = document.getElementById('weeklyChart').getContext('2d');
-        new Chart(ctx, { type: 'bar', data: { labels: ['月','火','水','木','金','土','日'], datasets: [{ label: '分', data: weeklyStats.focusMinutes, backgroundColor: '#e2b29f' }] } });
+        if(window.Chart) {
+            new Chart(ctx, { type: 'bar', data: { labels: ['月','火','水','木','金','土','日'], datasets: [{ label: '分', data: weeklyStats.focusMinutes, backgroundColor: '#e2b29f' }] } });
+        }
     }
 }
 
-initApp();
-
-
+// ==========================================
+// 🔧 🔧 【長押しテストモード】
+// ==========================================
 let touchTimer = null;
 let isTestModeActive = false; 
-
 
 function startPress() {
     touchTimer = setTimeout(() => {
@@ -291,7 +288,6 @@ function startPress() {
         alert("🔧 【テストモード】3秒タイマーがセットされました！\n「集中を開始する」ボタンを押してください。");
     }, 1000);
 }
-
 
 function cancelPress() {
     if (touchTimer) {
@@ -308,22 +304,20 @@ timerDisplay.addEventListener('touchend', cancelPress);
 timerDisplay.addEventListener('touchcancel', cancelPress);
 timerDisplay.addEventListener('mouseleave', cancelPress);
 
-startTimerBtn.onclick = (e) => {
+startTimerBtn.onclick = () => {
     if (countdownInterval) return; 
 
-    if (e.shiftKey || isTestModeActive) {
+    if (isTestModeActive) {
         timeLeft = 3; 
         isTestModeActive = false; 
     } else {
         timeLeft = parseInt(currentMinutesMode) * 60; 
     }
 
-    // タイマー作動開始の演出
     timerDisplay.classList.add('running');
     startTimerBtn.disabled = true;
     startTimerBtn.innerText = "🔒 集中ロック中...";
     
-    // カウントダウン処理
     countdownInterval = setInterval(() => {
         timeLeft--;
         timerDisplay.innerText = `${String(Math.floor(timeLeft/60)).padStart(2,'0')}:${String(timeLeft%60).padStart(2,'0')}`;
@@ -335,3 +329,5 @@ startTimerBtn.onclick = (e) => {
     }, 1000);
 };
 
+// アプリの起動
+initApp();
