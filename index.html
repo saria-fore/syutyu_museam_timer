@@ -51,14 +51,15 @@
 
         <hr class="section-divider">
 
-        <div class="mode-select-container">
-    <label for="modeSelect">🎨 展示コース（集中単位）を選択：</label>
-    <select id="modeSelect" class="select-box">
-        <option value="10">10分単位（細密画コース：54マス）</option>
-        <option value="15">15分単位（スタンダードコース：36マス）</option>
-        <option value="20">20分単位（中細作コース：27マス）</option>
-        <option value="30">30分単位（中作コース：18マス）</option>
-        <option value="60" selected>60分単位（大作コース：9マス）</option>
+<div class="mode-select-container" style="margin: 20px 0; font-size: 14px;">
+            <label for="modeSelect" style="font-weight: bold; margin-right: 5px;">⏱️ 今日の計測方法: </label>
+            <select id="modeSelect" class="select-box" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-line); background: #faf8f5; font-size: 14px; font-weight: bold; cursor: pointer;">
+                <option value="50" selected>⏳ 50分集中タイマー（王道）</option>
+                <option value="30">⏳ 30分集中タイマー（サクッと）</option>
+                <option value="15">⏳ 15分集中タイマー（隙間時間）</option>
+                <option value="free">ストップウォッチ（終わるまでフリー計測）</option>
+            </select>
+        </div>
     </select>
 </div>
 

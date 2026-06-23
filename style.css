@@ -143,7 +143,6 @@ h1 span { color: var(--accent-color); }
     color: var(--accent-color);
 }
 
-/* ギャラリーのサムネイルをタップしやすくする設定 */
 .gallery-thumb {
     width: 80px;
     height: 80px;
@@ -152,13 +151,12 @@ h1 span { color: var(--accent-color); }
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
-    border: 3px solid transparent; /* 普段は透明な枠線 */
+    border: 3px solid transparent; 
 }
 
-/* 選択中の画像は太い線の枠で囲む */
 .gallery-thumb.active {
     border-color: var(--accent-color) !important;
-    transform: scale(1.05); /* 少しだけ大きくして目立たせる */
+    transform: scale(1.05);
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
@@ -196,4 +194,32 @@ h1 span { color: var(--accent-color); }
     transform: scale(1.08) translateY(-2px);
     box-shadow: 0 6px 15px rgba(156, 179, 168, 0.3);
     z-index: 2;
+}
+
+.timer-display.rest-mode {
+    color: var(--accent-active) !important;
+    text-shadow: 0 0 10px rgba(156, 179, 168, 0.2);
+    transition: color 0.5s ease;
+}
+
+.level-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    font-weight: bold;
+    background: #ffffff;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    font-size: 13px;
+    border: 1px solid var(--border-line);
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.01);
+}
+
+#userRank {
+    color: var(--accent-active);
+}
+
+#totalMinutesDisplay {
+    color: var(--text-dark);
 }
