@@ -143,13 +143,34 @@ function updateUI() {
 }
 
 function renderGallery() {
-    galleryGrid.innerHTML = '';
-    if (completedImages.length === 0) return;
-    completedImages.forEach(item => {
-        const frame = document.createElement('div');
-        frame.classList.add('frame');
-        frame.innerHTML = `<img src="${item.src}"><div class="meta"><strong>${item.title}</strong><br>${item.date}</div>`;
-        galleryGrid.appendChild(frame);
+    const galleryContainer = document.getElementById('gallery');
+    if (!galleryContainer) return;
+    
+    galleryContainer.innerHTML = ''; 
+
+    imagePlaylist.forEach((img, index) => {
+        const thumb = document.createElement('img');
+        
+        const savedCustomSrc = localStorage.getItem(`custom_img_${img.id}`);
+        thumb.src = savedCustomSrc ? savedCustomSrc : img.src;
+        
+        thumb.className = 'gallery-thumb';
+        
+        if (index === currentImageIdx) {
+            thumb.classList.add('active');
+        }
+
+        
+        thumb.addEventListener('click', () => {
+            currentImageIdx = index; 
+            
+            renderPuzzle(); 
+            renderGallery(); 
+    
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        galleryContainer.appendChild(thumb);
     });
 }
 

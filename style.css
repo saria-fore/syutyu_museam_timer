@@ -142,3 +142,22 @@ h1 span { color: var(--accent-color); }
     border-color: var(--accent-color);
     color: var(--accent-color);
 }
+
+/* ギャラリーのサムネイルをタップしやすくする設定 */
+.gallery-thumb {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    margin: 5px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 3px solid transparent; /* 普段は透明な枠線 */
+}
+
+/* 選択中の画像は太い線の枠で囲む */
+.gallery-thumb.active {
+    border-color: var(--accent-color) !important;
+    transform: scale(1.05); /* 少しだけ大きくして目立たせる */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
