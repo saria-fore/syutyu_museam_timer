@@ -1,8 +1,19 @@
 const imagePlaylist = [
-    { id: 'test1', src: 'IMG_6295.jpg', title: 'test1' },
-    { id: 'test2', src: 'IMG_6296.jpg', title: 'test2' },
-    { id: 'test3', src: 'IMG_6297.jpg', title: 'test3' },
-
+    { id: '1', src: 'IMG_6295.jpg', title: ' ' },
+    { id: '2', src: 'IMG_6296.jpg', title: ' ' },
+    { id: '3', src: 'IMG_6297.jpg', title: ' ' },
+    { id: '4', src: 'IMG_6298.jpg', title: ' ' },
+    { id: '5', src: 'IMG_6299.jpg', title: ' ' },
+    { id: '6', src: 'IMG_6300.jpg', title: ' ' },    
+    { id: '7', src: 'IMG_6301.jpg', title: ' ' },
+    { id: '8', src: 'IMG_6302.jpg', title: ' ' },
+    { id: '9', src: 'IMG_6303.jpg', title: ' ' },
+    { id: '10', src: 'IMG_6304.jpg', title: ' ' },
+    { id: '11', src: 'IMG_6305.jpg', title: ' ' },
+    { id: '12', src: 'IMG_6306.jpg', title: ' ' }, 
+    { id: '13', src: 'IMG_6307.jpg', title: ' ' },
+    { id: '14', src: 'IMG_6308.jpg', title: ' ' },
+    { id: '15', src: 'IMG_6309.jpg', title: ' ' }
 ];
 
 const imageLoader = document.getElementById('imageLoader');
