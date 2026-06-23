@@ -180,6 +180,9 @@ function resetTimerDisplay() {
     startTimerBtn.innerText = "⏳ 集中を開始する";
 }
 
+// ==========================================================================
+// 🎉 パズルが1マス埋まった時、および完全完成時の処理（超頑丈版）
+// ==========================================================================
 function panelCompleted() {
     currentPanels++;
     localStorage.setItem('museum_panels', currentPanels);
@@ -190,21 +193,35 @@ function panelCompleted() {
     
     updateUI();
     
+
     if (currentPanels >= totalPanels) {
-        confetti();
+        confetti(); 
         
-        completedImages.push({ 
+       
+        let freshCompleted = JSON.parse(localStorage.getItem('museum_completed')) || [];
+        
+        freshCompleted.push({ 
             src: currentPuzzleSrc, 
             date: new Date().toLocaleDateString() 
         });
-        localStorage.setItem('museum_completed', JSON.stringify(completedImages));
+        
+        localStorage.setItem('museum_completed', JSON.stringify(freshCompleted));
+        
+        completedImages = freshCompleted;
+        
+        
+        renderGallery();
         
         alert("🎉 おめでとうございます！パズルが完成し、コレクションに登録されました！");
         
         setTimeout(() => { 
             currentPanels = 0; 
             localStorage.setItem('museum_panels', 0); 
-            initApp(); 
+            
+            calculateDimensions();
+            renderPuzzle();
+            updateUI();
+            resetTimerDisplay();
         }, 3000);
     } else {
         setTimeout(resetTimerDisplay, 1000);
